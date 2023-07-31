@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Responsive Articles Page</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+  </head>
+  <body>
+    <div id="app">
+      <h2 id="error">404 Page Not Found!</h2>
+      <script>
+        function firstArticle(article) {
+          let firstTwoWords = article.Intro.split(" ").slice(0, 2).join(" ");
+          let result = article.Intro.substr(article.Intro.indexOf(" ") + 1);
+          let secondSpace = result.substr(result.indexOf(" ") + 1);
+          return `
+            <div class="section">
+                <article> 
+                    <img id="img" src="${article.Imageurl}" alt=${
+            article.Imageurl
+          }>
+                    <h2 id="firstArticle"><img class="icon" src="icon.jpg" alt="icon"> ${
+                      article.Title
+                    } </h2>
+                    <p>
+                        <span id="second" >${firstTwoWords}</span>
+                        ${article.Intro.slice(secondSpace)}
+                    </p>
+                </article>
+                    <i class="fa fa-clock-o" aria-hidden="true"></i>
+                    ${article.Published}
+                <i class="fa fa-comments-o" aria-hidden="true"></i>
+            </div>
+            `;
+        }
+
+        function articleTemplate(post) {
+          let firstWord = post.Intro.split(" ")[0];
+          let firstSpace = post.Intro.indexOf(" ");
+          return `
+            <article> 
+                <img id="img" src="${post.Imageurl}" alt=${post.Imageurl}>
+                <h2>
+                    <img class="icon" src="icon.jpg" alt="icon"> ${post.Title} 
+                </h2>
+            <p> 
+                <span id="first" >
+                    ${firstWord}
+                </span>
+                ${post.Intro.slice(firstSpace)}
+            </p>
+            </article>
+            <i class="fa fa-clock-o" aria-hidden="true"></i>
+                ${post.Published}
+            <i class="fa fa-comments-o" aria-hidden="true"></i>
+            <hr/>
+    `;
+        }
+        function lastArticle(post) {
+          return `
+        <article> 
+            <img id="hp" src="${post.Imageurl}" alt=${post.Imageurl}>
+	        <h3>
+                <img class="icon" src="icon.jpg" alt="icon"> ${post.Title} 
+            </h3>
+        </article>
+		<i class="fa fa-clock-o" aria-hidden="true"></i>
+             ${post.Published}
+        <hr/>
+    `;
+        }
+
+        // Function for the first API call
+        function fetchFirstAPI() {
+          return fetch("./api/collectionInfo.json")
+            .then((response) => response.json())
+            .catch((error) => {
+              console.error("Error fetching first API:", error);
+              throw error;
+            });
+        }
+
+        // Function for the second API call
+        function fetchSecondAPI(dataFromFirstAPI) {
+          return fetch(`./api/collection.json?param=${dataFromFirstAPI}`)
+            .then((response) => response.json())
+            .catch((error) => {
+              console.error("Error fetching second API:", error);
+              throw error;
+            });
+        }
+
+        // Usage
+        fetchFirstAPI()
+          .then((dataFromFirstAPI) => fetchSecondAPI(dataFromFirstAPI))
+          .then((data) => {
+            try {
+              document.getElementById("app").innerHTML = `
+                    <div class="container">
+                        ${data
+                          .filter((item, index) => index === 0)
+                          .map(firstArticle)
+                          .join("")}
+                        <div class="section section-left">
+                            ${data
+                              .filter((item, index) => index === 1)
+                              .map(articleTemplate)
+                              .join("")}
+                            <div class="section se-resize">
+                            ${data.slice(2, 4).map(lastArticle).join("")}
+                            </div>
+                        </div>  
+                    </div>
+                
+                `;
+            } catch (error) {
+              document.getElementById("error").innerHTML = err.message;
+            }
+          });
+      </script>
+    </div>
+  </body>
+</html>
